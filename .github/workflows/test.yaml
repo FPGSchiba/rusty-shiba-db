@@ -1,0 +1,10 @@
+name: Test
+
+on:
+  pull_request:
+    types:
+      - opened
+jobs:
+  nothing:
+    runs-on: ubuntu-latest
+    name: Nothing
