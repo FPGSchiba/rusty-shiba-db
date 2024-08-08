@@ -25,8 +25,26 @@ func getKeys[T any](input map[string]T) []string {
 	return keys
 }
 
+func getTypeFromAttr(attr map[string]interface{}) (bool, string) {
+	hasType := false
+	var dataType string
+	for attributeKey, attributeValue := range attr {
+		if attributeKey == "type" {
+			hasType = true
+			dataType = attributeValue.(string)
+		}
+	}
+	if !hasType {
+		return false, ""
+	}
+	return true, dataType
+}
+
 func checkAttributes(attr map[string]interface{}, schemaKey string) (bool, string) {
-	hasTypeKey := false
+	hasTypeKey, dataType := getTypeFromAttr(attr)
+	if !hasTypeKey {
+		return false, fmt.Sprintf("Key `type` was not found in schema for Key: `%s`, which is needed to define Attribute types.", schemaKey)
+	}
 	for attributeKey, attributeValue := range attr {
 		if attributeDefinitions.InvalidAttributeDefinition(attributeKey) {
 			return false, fmt.Sprintf("Attribute key: `%s` does not exist, schema error.", attributeKey)
@@ -58,7 +76,6 @@ func checkAttributes(attr map[string]interface{}, schemaKey string) (bool, strin
 			}
 
 			if attributeValue.(string) == types.OBJECT {
-				// TODO: Check Content Attribute
 				keys := getKeys(attr)
 				contentExists := false
 				for _, key := range keys {
@@ -77,10 +94,12 @@ func checkAttributes(attr map[string]interface{}, schemaKey string) (bool, strin
 				}
 			}
 		}
+
+		if attributeDefinitions.InvalidAttributeDefinitionForType(dataType, attributeKey) {
+			return false, fmt.Sprintf("Attribute key: `%s` does not exist for dataType: `%s` in schemaKey: `%s`, schema error.", attributeKey, dataType, schemaKey)
+		}
 	}
-	if !hasTypeKey {
-		return false, "Key `type` was not found in schema, which is needed to define Attribute types."
-	}
+
 	return true, ""
 }
 

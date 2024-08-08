@@ -1,12 +1,13 @@
 package util
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"time"
 )
 
-func getDurationInMillseconds(start time.Time) float64 {
+func getDurationInMilliseconds(start time.Time) float64 {
 	end := time.Now()
 	duration := end.Sub(start)
 	milliseconds := float64(duration) / float64(time.Millisecond)
@@ -23,7 +24,7 @@ func JSONLogMiddleware() gin.HandlerFunc {
 		c.Next()
 
 		// Stop timer
-		duration := getDurationInMillseconds(start)
+		duration := fmt.Sprintf("%f ms", getDurationInMilliseconds(start))
 
 		entry := log.WithFields(log.Fields{
 			"duration":   duration,

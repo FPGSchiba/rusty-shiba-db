@@ -2,10 +2,10 @@ package collections
 
 import (
 	"errors"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"net/http"
+	"rsdb/src/rust/collections"
 	"rsdb/src/util"
 )
 
@@ -19,7 +19,6 @@ func CreateCollection(c *gin.Context) {
 		return
 	}
 	if body.Schema != nil {
-		fmt.Println(body.Schema)
 		valid, message := isValidSchema(body.Schema)
 		if !valid {
 			c.JSON(http.StatusBadRequest, util.GetResponseWithMessage(message))
@@ -27,8 +26,14 @@ func CreateCollection(c *gin.Context) {
 		}
 	}
 
+	collection := collections.CreateNewCollection(body.Name, body.Schema)
+	if collection == nil {
+		c.JSON(http.StatusInternalServerError, util.GetResponseWithMessage("collection creation failed"))
+		return
+	}
+
 	c.JSON(http.StatusCreated, createCollectionResponse{
 		Response:       util.Response{Status: "success", Message: "Collection created successfully."},
-		CollectionName: body.Name,
+		CollectionName: collection.Name,
 	})
 }
