@@ -37,6 +37,7 @@ jobs:
         run: |
           chmod +x build.sh
           ./build.sh
+          ls
 
       - name: Tag
         id: tag
