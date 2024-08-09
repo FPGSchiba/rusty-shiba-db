@@ -35,8 +35,8 @@ jobs:
 
       - name: build
         run: |
-          - chmod +x build.sh
-          - ./build.sh
+          chmod +x build.sh
+          ./build.sh
 
       - name: Tag
         id: tag
