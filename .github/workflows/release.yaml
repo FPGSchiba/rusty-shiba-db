@@ -31,7 +31,7 @@ jobs:
       - name: Generate build files
         uses: thatisuday/go-cross-build@v1
         with:
-          platforms: 'linux/amd64, linux/arm64, darwin/amd64, darwin/arm64, windows/amd64, windows/arm64'
+          platforms: 'linux/amd64, darwin/amd64, windows/amd64'
           package: 'rsdb/src'
           name: 'rusty-shiba-db'
           compress: 'true'
@@ -51,11 +51,8 @@ jobs:
         with:
           files: |
             ./dist/rusty-shiba-db-linux-amd64.tar.gz
-            ./dist/rusty-shiba-db-linux-arm64.tar.gz
             ./dist/rusty-shiba-db-darwin-amd64.tar.gz
-            ./dist/rusty-shiba-db-darwin-arm64.tar.gz
             ./dist/rusty-shiba-db-windows-amd64.tar.gz
-            ./dist/rusty-shiba-db-windows-arm64.tar.gz
           tag_name: ${{ steps.tag.tag }}
           generate_release_notes: 'true'
           draft: 'true'
