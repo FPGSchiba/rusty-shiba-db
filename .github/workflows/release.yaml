@@ -28,14 +28,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Generate build files
-        uses: thatisuday/go-cross-build@v1.1.0
+      - name: Set up Go
+        uses: actions/setup-go@v4
         with:
-          platforms: 'linux/amd64, darwin/amd64, windows/amd64'
-          package: ''
-          name: 'rusty-shiba-db'
-          compress: 'true'
-          dest: 'dist'
+          go-version: '1.22'
+
+      - name: build
+        run: ./build.sh
 
       - name: Tag
         id: tag
@@ -50,9 +49,12 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            ./dist/rusty-shiba-db-linux-amd64.tar.gz
-            ./dist/rusty-shiba-db-darwin-amd64.tar.gz
-            ./dist/rusty-shiba-db-windows-amd64.tar.gz
+            - ./rusty-shiba-db-linux-arm64
+            - ./rusty-shiba-db-linux-amd64
+            - ./rusty-shiba-db-darwin-arm64
+            - ./rusty-shiba-db-darwin-amd64
+            - ./rusty-shiba-db-windows-arm64.exe
+            - ./rusty-shiba-db-windows-amd64.exe
           tag_name: ${{ steps.tag.tag }}
           generate_release_notes: 'true'
           draft: 'true'
