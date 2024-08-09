@@ -1,10 +1,24 @@
-name: Test
+name: Go
 
 on:
+  push:
+    branches: [ "main" ]
   pull_request:
-    types:
-      - opened
+    branches: [ "main" ]
+
 jobs:
-  nothing:
+  build:
     runs-on: ubuntu-latest
-    name: Nothing
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.22'
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Test
+        run: go test -v ./...
