@@ -27,10 +27,6 @@ jobs:
     if: github.event.pull_request.merged
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: '1.22'
 
       - name: Generate build files
         uses: thatisuday/go-cross-build@v1
