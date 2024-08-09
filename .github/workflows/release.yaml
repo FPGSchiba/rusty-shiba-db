@@ -58,7 +58,7 @@ jobs:
             - rusty-shiba-db-darwin-amd64
             - rusty-shiba-db-windows-arm64.exe
             - rusty-shiba-db-windows-amd64.exe
-          tag_name: ${{ steps.tag.tag }}
+          tag_name: ${{ steps.tag.outputs.tag }}
           generate_release_notes: 'true'
           draft: 'true'
           name: 'Release ${{ steps.tag.tag }}'
