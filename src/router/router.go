@@ -24,6 +24,7 @@ func GetRouter() *gin.Engine {
 		collectionGroup := superGroup.Group("/collections")
 		{
 			collectionGroup.POST("/", collections.CreateCollection)
+			collectionGroup.GET("/:collection", collections.ReadCollection)
 		}
 	}
 	return router

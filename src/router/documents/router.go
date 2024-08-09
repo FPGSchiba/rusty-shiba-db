@@ -11,6 +11,8 @@ import (
 
 func CreateDocument(c *gin.Context) {
 	body := documentCreateRequest{}
+	collection := c.Param("collection")
+	fmt.Println(fmt.Sprintf("collection: %s", collection))
 	if err := c.ShouldBindJSON(&body); err != nil {
 		var ve validator.ValidationErrors
 		if errors.As(err, &ve) {

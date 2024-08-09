@@ -1,6 +1,7 @@
 package util
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 )
@@ -12,11 +13,16 @@ type ErrorMsg struct {
 
 func GetErrorResponse(err error) gin.H {
 	var ve validator.ValidationErrors
-	out := make([]ErrorMsg, len(ve))
-	for i, fe := range ve {
-		out[i] = ErrorMsg{Field: fe.Field(), Message: getErrorMsg(fe)}
+	if errors.As(err, &ve) {
+		out := make([]ErrorMsg, len(ve))
+		for i, fe := range ve {
+			out[i] = ErrorMsg{Field: fe.Field(), Message: getErrorMsg(fe)}
+		}
+
+		return gin.H{"errors": out, "status": "error"}
 	}
-	return gin.H{"errors": out, "status": "error"}
+
+	return gin.H{"message": err.Error(), "status": "error"}
 }
 
 func GetResponseWithMessage(message string) gin.H {

@@ -26,14 +26,31 @@ func CreateCollection(c *gin.Context) {
 		}
 	}
 
-	collection := collections.CreateNewCollection(body.Name, body.Schema)
-	if collection == nil {
-		c.JSON(http.StatusInternalServerError, util.GetResponseWithMessage("collection creation failed"))
+	collection, message := collections.CreateNewCollection(body.Name, body.Schema)
+	if collection == nil { // TODO: More status codes for different cases here
+		c.JSON(http.StatusInternalServerError, util.GetResponseWithMessage(message))
 		return
 	}
 
 	c.JSON(http.StatusCreated, createCollectionResponse{
-		Response:       util.Response{Status: "success", Message: "Collection created successfully."},
+		Response:       util.Response{Status: "success", Message: message},
 		CollectionName: collection.Name,
+	})
+}
+
+func ReadCollection(c *gin.Context) {
+	collectionName := c.Param("collection")
+	collection, message := collections.ReadCollection(collectionName)
+	if collection == nil {
+		c.JSON(http.StatusNotFound, util.GetResponseWithMessage(message))
+		return
+	}
+	c.JSON(http.StatusOK, readCollectionResponse{
+		Response:       util.Response{Status: "success", Message: message},
+		CollectionName: collectionName,
+		CollectionId:   collection.Id,
+		Schema:         collection.Schema,
+		CreatedAt:      collection.CreatedAt,
+		UpdatedAt:      collection.UpdatedAt,
 	})
 }

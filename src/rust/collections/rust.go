@@ -6,8 +6,10 @@ import (
 	"github.com/pborman/uuid"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"os"
 	"path"
+	"rsdb/src/util"
 	"runtime"
 	"strings"
 )
@@ -17,9 +19,11 @@ type Collections struct {
 }
 
 type Collection struct {
-	Name   string
-	Schema map[string]interface{}
-	id     string
+	Name      string
+	Schema    map[string]interface{}
+	Id        string
+	CreatedAt string
+	UpdatedAt string
 }
 
 const (
@@ -79,19 +83,26 @@ func readCollectionsFile() ([]map[string]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	println(file)
-	var collectionsValue map[string]interface{}
-	err = bson.Unmarshal(file, collectionsValue)
+
+	var result map[string]interface{}
+	err = bson.Unmarshal(file, &result)
 	if err != nil {
 		return nil, err
 	}
-	existingCollections := collectionsValue["collections"].([]map[string]interface{})
-	return existingCollections, nil
+
+	primitiveSlice := result["collections"].(primitive.A)
+	var collectionValues []map[string]interface{}
+	for _, collection := range primitiveSlice {
+		collectionValues = append(collectionValues, collection.(map[string]interface{}))
+	}
+
+	return collectionValues, nil
 }
 
 func writeSchemaFile(collectionId string, schema map[string]interface{}) error {
 	rootPath := getRootPath()
 	schemaFile := path.Join(rootPath, fmt.Sprintf("%s.rsc", collectionId))
+
 	marshal, err := bson.Marshal(bson.M{"schema": schema})
 	if err != nil {
 		return err
@@ -101,6 +112,21 @@ func writeSchemaFile(collectionId string, schema map[string]interface{}) error {
 		return err
 	}
 	return nil
+}
+
+func readSchemaFile(collectionId string) (map[string]interface{}, error) {
+	rootPath := getRootPath()
+	schemaFile := path.Join(rootPath, fmt.Sprintf("%s.rsc", collectionId))
+	file, err := os.ReadFile(schemaFile)
+	if err != nil {
+		return nil, err
+	}
+	var result map[string]interface{}
+	err = bson.Unmarshal(file, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 func writeIndexFile(collectionId string, index []map[string]interface{}) error {
@@ -129,7 +155,9 @@ func InitRustyStorage() *Collections {
 	// Check collections file
 	if _, err := os.Stat(collectionsFile); errors.Is(err, os.ErrNotExist) {
 		// Init collections file
-		err := writeCollectionsFile([]map[string]interface{}{})
+		var data []map[string]interface{}
+		data = make([]map[string]interface{}, 0)
+		err := writeCollectionsFile(data)
 		if err != nil {
 			return nil
 		}
@@ -138,8 +166,9 @@ func InitRustyStorage() *Collections {
 	return &Collections{rootPath: rootPath}
 }
 
-func CreateNewCollection(name string, schema map[string]interface{}) *Collection {
+func CreateNewCollection(name string, schema map[string]interface{}) (*Collection, string) {
 	collId := uuid.NewUUID().String()
+	creationTime := util.GetCurrentTime()
 
 	// Add to collections
 	existingCollections, err := readCollectionsFile()
@@ -149,7 +178,7 @@ func CreateNewCollection(name string, schema map[string]interface{}) *Collection
 			"function":   "CreateNewCollection",
 			"collection": name,
 		}).Error(fmt.Sprintf("Failed to read existing collections: %s", err.Error()))
-		return nil // TODO: Correct error handling
+		return nil, fmt.Sprintf("Failed to read existing collections: %s", err.Error())
 	}
 	for _, collection := range existingCollections {
 		if collection["name"] == name {
@@ -158,12 +187,14 @@ func CreateNewCollection(name string, schema map[string]interface{}) *Collection
 				"function":   "CreateNewCollection",
 				"collection": name,
 			}).Error("Collection already exists")
-			return nil // TODO: Correct error handling
+			return nil, "Collection already exists"
 		}
 	}
 	newCollectionValue := map[string]interface{}{
-		"name": name,
-		"id":   collId,
+		"name":       name,
+		"id":         collId,
+		"created_at": creationTime,
+		"updated_at": nil,
 	}
 	newCollections := append(existingCollections, newCollectionValue)
 	err = writeCollectionsFile(newCollections)
@@ -173,7 +204,7 @@ func CreateNewCollection(name string, schema map[string]interface{}) *Collection
 			"function":   "CreateNewCollection",
 			"collection": name,
 		}).Error(fmt.Sprintf("Failed to update existing Collections: %s", err.Error()))
-		return nil // TODO: Correct error handling
+		return nil, fmt.Sprintf("Failed to update existing Collections: %s", err.Error())
 	}
 
 	// Create Schema file
@@ -185,7 +216,17 @@ func CreateNewCollection(name string, schema map[string]interface{}) *Collection
 				"function":   "CreateNewCollection",
 				"collection": name,
 			}).Error(fmt.Sprintf("Failed to create Schema file: %s", err.Error()))
-			return nil // TODO: Correct error handling
+			return nil, fmt.Sprintf("Failed to create Schema file: %s", err.Error())
+		}
+	} else {
+		err := writeSchemaFile(collId, make(map[string]interface{}))
+		if err != nil {
+			log.WithFields(log.Fields{
+				"component":  "RustyStorage",
+				"function":   "CreateNewCollection",
+				"collection": name,
+			}).Error(fmt.Sprintf("Failed to create Schema file: %s", err.Error()))
+			return nil, fmt.Sprintf("Failed to create Schema file: %s", err.Error())
 		}
 	}
 
@@ -197,7 +238,7 @@ func CreateNewCollection(name string, schema map[string]interface{}) *Collection
 			"function":   "CreateNewCollection",
 			"collection": name,
 		}).Error(fmt.Sprintf("Failed to create Index file: %s", err.Error()))
-		return nil // TODO: Correct error handling
+		return nil, fmt.Sprintf("Failed to create Index file: %s", err.Error())
 	}
 
 	// Create Data folder
@@ -208,8 +249,46 @@ func CreateNewCollection(name string, schema map[string]interface{}) *Collection
 			"function":   "CreateNewCollection",
 			"collection": name,
 		}).Error(fmt.Sprintf("Failed to create Data folder: %s", err.Error()))
-		return nil
+		return nil, fmt.Sprintf("Failed to create Data folder: %s", err.Error())
 	}
 
-	return &Collection{Name: name, Schema: schema, id: collId}
+	return &Collection{Name: name, Schema: schema, Id: collId, CreatedAt: creationTime, UpdatedAt: ""}, fmt.Sprintf("Successfully created collection: '%s'", name)
+}
+
+func ReadCollection(collName string) (*Collection, string) {
+	existingCollections, err := readCollectionsFile()
+	if err != nil {
+		log.WithFields(log.Fields{
+			"component":  "RustyStorage",
+			"function":   "ReadCollection",
+			"collection": collName,
+		}).Error(fmt.Sprintf("Failed to read existing collections: %s", err.Error()))
+		return nil, fmt.Sprintf("Failed to read existing collections: %s", err.Error())
+	}
+	for _, collection := range existingCollections {
+		if collection["name"] == collName {
+			updatedAt := collection["updated_at"]
+			if updatedAt == nil {
+				updatedAt = ""
+			}
+			schema, err := readSchemaFile(collection["id"].(string))
+			if err != nil {
+				log.WithFields(log.Fields{
+					"component":  "RustyStorage",
+					"function":   "ReadCollection",
+					"collection": collName,
+				}).Error(fmt.Sprintf("Failed to read existing collection: %s", err.Error()))
+				return nil, fmt.Sprintf("Failed to read existing collection: %s", err.Error())
+			}
+			return &Collection{
+				Name:      collName,
+				Id:        collection["id"].(string),
+				Schema:    schema,
+				CreatedAt: collection["created_at"].(string),
+				UpdatedAt: updatedAt.(string),
+			}, fmt.Sprintf("Successfully read collection: '%s'", collName)
+		}
+	}
+
+	return nil, fmt.Sprintf("Could not find Collection: '%s'", collName)
 }

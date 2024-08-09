@@ -17,6 +17,15 @@ type createCollectionResponse struct {
 	CollectionName string `json:"collection_name"`
 }
 
+type readCollectionResponse struct {
+	util.Response
+	CollectionName string                 `json:"collection_name"`
+	CollectionId   string                 `json:"collection_id"`
+	Schema         map[string]interface{} `json:"schema"`
+	CreatedAt      string                 `json:"created_at"`
+	UpdatedAt      string                 `json:"updated_at"`
+}
+
 func getKeys[T any](input map[string]T) []string {
 	keys := make([]string, 0, len(input))
 	for k := range input {
