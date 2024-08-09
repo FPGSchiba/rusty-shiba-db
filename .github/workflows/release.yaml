@@ -41,7 +41,7 @@ jobs:
 
       - name: Tag
         id: tag
-        uses: K-Phoen/semver-release-action@master
+        uses: K-Phoen/semver-release-action@v1.3.2
         with:
           release_branch: main
           release_strategy: tag
