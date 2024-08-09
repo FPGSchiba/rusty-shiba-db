@@ -43,7 +43,7 @@ jobs:
         id: tag
         uses: K-Phoen/semver-release-action@master
         with:
-          release_branch: master
+          release_branch: main
           release_strategy: tag
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -52,12 +52,12 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            - ./rusty-shiba-db-linux-arm64
-            - ./rusty-shiba-db-linux-amd64
-            - ./rusty-shiba-db-darwin-arm64
-            - ./rusty-shiba-db-darwin-amd64
-            - ./rusty-shiba-db-windows-arm64.exe
-            - ./rusty-shiba-db-windows-amd64.exe
+            - rusty-shiba-db-linux-arm64
+            - rusty-shiba-db-linux-amd64
+            - rusty-shiba-db-darwin-arm64
+            - rusty-shiba-db-darwin-amd64
+            - rusty-shiba-db-windows-arm64.exe
+            - rusty-shiba-db-windows-amd64.exe
           tag_name: ${{ steps.tag.tag }}
           generate_release_notes: 'true'
           draft: 'true'
