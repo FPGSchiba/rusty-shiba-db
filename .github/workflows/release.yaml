@@ -61,5 +61,6 @@ jobs:
           tag_name: ${{ steps.tag.tag }}
           generate_release_notes: 'true'
           draft: 'true'
+          name: 'Release ${{ steps.tag.tag }}'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
