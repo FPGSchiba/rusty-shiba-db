@@ -24,7 +24,7 @@ func JSONLogMiddleware() gin.HandlerFunc {
 		c.Next()
 
 		// Stop timer
-		duration := fmt.Sprintf("%f ms", getDurationInMilliseconds(start))
+		duration := fmt.Sprintf("%.2fms", getDurationInMilliseconds(start))
 
 		entry := log.WithFields(log.Fields{
 			"duration":   duration,

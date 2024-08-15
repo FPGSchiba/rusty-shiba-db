@@ -1,5 +1,5 @@
 # rusty-shiba-db
 
-## Testing
+## ToDo's
 
-This is a test
+ [x] use this https://github.com/swaggo/gin-swagger

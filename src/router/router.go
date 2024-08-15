@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"rsdb/src/router/collections"
 	"rsdb/src/router/documents"
+	"rsdb/src/router/users"
 	"rsdb/src/util"
 )
 
@@ -25,6 +26,13 @@ func GetRouter() *gin.Engine {
 		{
 			collectionGroup.POST("/", collections.CreateCollection)
 			collectionGroup.GET("/:collection", collections.ReadCollection)
+			collectionGroup.PATCH("/:collection", collections.UpdateCollection)
+			collectionGroup.DELETE("/:collection", collections.DeleteCollection)
+			collectionGroup.GET("/", collections.ListCollections)
+		}
+		userGroup := superGroup.Group("/users")
+		{
+			userGroup.POST("/", users.CreateUser)
 		}
 	}
 	return router

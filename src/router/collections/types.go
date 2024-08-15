@@ -2,6 +2,8 @@ package collections
 
 import (
 	"fmt"
+	"regexp"
+	"rsdb/src/rust/collections"
 	"rsdb/src/util"
 	attributeDefinitions "rsdb/src/util/attrDefinitions"
 	"rsdb/src/util/types"
@@ -24,6 +26,23 @@ type readCollectionResponse struct {
 	Schema         map[string]interface{} `json:"schema"`
 	CreatedAt      string                 `json:"created_at"`
 	UpdatedAt      string                 `json:"updated_at"`
+}
+
+type updateCollectionRequest struct {
+	Name   string                 `json:"name"`
+	Schema map[string]interface{} `json:"schema"`
+}
+
+type updateCollectionResponse struct {
+	util.Response
+	CollectionName string          `json:"collection_name"`
+	Pagination     util.Pagination `json:"pagination"`
+}
+
+type listCollectionsResponse struct {
+	util.Response
+	Data       []collections.CollectionInfo `json:"data"`
+	Pagination util.Pagination              `json:"pagination"`
 }
 
 func getKeys[T any](input map[string]T) []string {
@@ -125,4 +144,12 @@ func isValidSchema(schema map[string]interface{}) (bool, string) {
 	}
 
 	return true, ""
+}
+
+func isValidName(name string) bool {
+	compile, err := regexp.Compile("^[a-z0-9-]*$")
+	if err != nil {
+		return false
+	}
+	return compile.MatchString(name)
 }
