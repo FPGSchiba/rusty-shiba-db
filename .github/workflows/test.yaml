@@ -20,7 +20,7 @@ jobs:
       - run: go build -v ./...
 
       - name: Test
-        run: go test -v ./... -coverprofile=./cov.out -json > test-report.out
+        run: go test -v ./... -coverprofile="cov.out"
 
       - name: Archive code coverage results
         uses: actions/upload-artifact@v1
