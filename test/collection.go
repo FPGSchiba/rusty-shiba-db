@@ -129,9 +129,10 @@ func ShouldReadCollection404(t *testing.T) {
 
 func ShouldUpdateCollection200(t *testing.T) {
 	requestBody := getBooksSchema()
-	requestBody["author"] = map[string]interface{}{
+	requestBody["schema"].(map[string]interface{})["author"] = map[string]interface{}{
 		"type": "str",
 	}
+	delete(requestBody, "name")
 	requestJSON, _ := json.Marshal(requestBody)
 	resp, err := request("PATCH", "/api/v1/collections/books", strings.NewReader(string(requestJSON)))
 	if err != nil {

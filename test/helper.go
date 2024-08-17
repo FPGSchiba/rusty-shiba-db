@@ -22,8 +22,7 @@ func request(method string, url string, body io.Reader) (*http.Response, error) 
 
 func getResponseBody(resp *http.Response) (map[string]interface{}, error) {
 	var responseBody map[string]interface{}
-	var bodyContent []byte
-	_, err := resp.Body.Read(bodyContent)
+	bodyContent, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
