@@ -5,6 +5,8 @@
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=FPGSchiba_rusty-shiba-db&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=FPGSchiba_rusty-shiba-db)
 
 
+[![SonarCloud](https://sonarcloud.io/images/project_badges/sonarcloud-black.svg)](https://sonarcloud.io/summary/new_code?id=FPGSchiba_rusty-shiba-db)
+
 ## ToDo's
 
  [x] use this https://github.com/swaggo/gin-swagger
