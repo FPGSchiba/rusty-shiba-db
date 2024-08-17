@@ -196,6 +196,19 @@ func InitRustyStorage() *Collections {
 	return &Collections{rootPath: rootPath}
 }
 
+func DestroyRustyStorage() error {
+	rootPath := getRootPath()
+	err := os.RemoveAll(rootPath)
+	if err != nil {
+		return err
+	}
+	err = os.MkdirAll(rootPath, os.ModeDir)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func CreateNewCollection(name string, schema map[string]interface{}) (*Collection, string) {
 	collId := uuid.NewUUID().String()
 	creationTime := util.GetCurrentTime()

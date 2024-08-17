@@ -10,7 +10,7 @@ import (
 )
 
 type creatCollectionRequest struct {
-	Name   string                 `json:"name" binding:"required"`
+	Name   string                 `json:"name" binding:"required" validations:"type=string"`
 	Schema map[string]interface{} `json:"schema"`
 }
 
@@ -137,9 +137,15 @@ func isValidSchema(schema map[string]interface{}) (bool, string) {
 		if schemaKey == "id" {
 			return false, "Key `id` was found in document, which is system reserved."
 		}
-		valid, message := checkAttributes(schemaValue.(map[string]interface{}), schemaKey)
-		if !valid {
-			return false, message
+		switch schemaValue.(type) {
+		case map[string]interface{}:
+			valid, message := checkAttributes(schemaValue.(map[string]interface{}), schemaKey)
+			if !valid {
+				return false, message
+			}
+			break
+		default:
+			return false, fmt.Sprintf("Schema key `%s` is not a valid schema attribute.", schemaKey)
 		}
 	}
 

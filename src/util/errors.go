@@ -22,7 +22,7 @@ func GetErrorResponse(err error) gin.H {
 		return gin.H{"errors": out, "status": "error"}
 	}
 
-	return gin.H{"message": err.Error(), "status": "error"}
+	return gin.H{"message": "Failed to create Collection. This is because the body does not meet the requirements.", "status": "error"}
 }
 
 func GetResponseWithMessage(message string) gin.H {

@@ -15,14 +15,12 @@ import (
 func CreateCollection(c *gin.Context) {
 	body := creatCollectionRequest{}
 	if err := c.ShouldBindJSON(&body); err != nil {
-		var ve validator.ValidationErrors
-		if errors.As(err, &ve) {
-			c.JSON(http.StatusBadRequest, util.GetErrorResponse(err))
-		}
+		c.JSON(http.StatusBadRequest, util.GetErrorResponse(err))
 		return
 	}
+
 	if !isValidName(body.Name) {
-		c.JSON(http.StatusNotFound, util.GetResponseWithMessage(fmt.Sprintf("Invalid collection name: `%s`, must match regex Pattern: `^[a-z0-9-]*$`", body.Name)))
+		c.JSON(http.StatusBadRequest, util.GetResponseWithMessage(fmt.Sprintf("Invalid collection name: `%s`, must match regex Pattern: `^[a-z0-9-]*$`", body.Name)))
 		return
 	}
 	if body.Schema != nil {
@@ -35,6 +33,10 @@ func CreateCollection(c *gin.Context) {
 
 	collection, message := collections.CreateNewCollection(body.Name, body.Schema)
 	if collection == nil { // TODO: More status codes for different cases here
+		if strings.Contains(message, "already exists") {
+			c.JSON(http.StatusConflict, util.GetResponseWithMessage(message))
+			return
+		}
 		c.JSON(http.StatusInternalServerError, util.GetResponseWithMessage(message))
 		return
 	}
@@ -104,7 +106,7 @@ func UpdateCollection(c *gin.Context) {
 			return
 		}
 		success, message := collections.UpdateCollectionSchema(collectionName, body.Schema)
-		if !success {
+		if !success { // TODO: More status codes
 			c.JSON(http.StatusInternalServerError, util.GetResponseWithMessage(message))
 			return
 		}
