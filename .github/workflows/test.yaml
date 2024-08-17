@@ -9,6 +9,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      GIN_MODE: release
     steps:
       - uses: actions/checkout@v4
 
@@ -24,4 +26,4 @@ jobs:
         run: sudo mkdir /data/rsdb/ && sudo chmod -R 777 /data/
 
       - name: Test
-        run: go test -v ./...
+        run: go test -v ./... -coverprofile=./cov.out -json > test-report.out
