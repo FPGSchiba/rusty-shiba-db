@@ -27,8 +27,3 @@ jobs:
 
       - name: Test
         run: go test -v ./... -coverprofile=./cov.out -json > test-report.out
-
-      - name: SonarCloud Scan
-        uses: sonarsource/sonarcloud-github-action@2.3.0
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
