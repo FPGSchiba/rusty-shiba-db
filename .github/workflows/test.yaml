@@ -19,6 +19,9 @@ jobs:
           go-version: '1.23.0'
       - run: go build -v ./...
 
+      - name: Permissionms
+        run: sudo mkdir /data/rsdb/ && sudo chmod -R 777 /data/
+
       - name: Test
         run: go test -v ./... -coverprofile="cov.out"
 
