@@ -20,5 +20,8 @@ jobs:
       - name: Build
         run: go build -v ./...
 
+      - name: Permissionms
+        run: mkdir /data/rsdb/ && chmod 777 /data/rsdb
+
       - name: Test
         run: go test -v ./...
